@@ -1,5 +1,8 @@
+import time
 class Vigenere():
     def __init__(self):
+        self.guesses = 21
+        self.alphabet_size = 26
         self.ioc_english = 0.0656
         self.ioc_portuguese = 0.0738
         self.letter_frequences = {
@@ -13,11 +16,14 @@ class Vigenere():
         }
 
     def decode(self, file: str)-> str:
+        start = time.time()
         ciphertext = self.get_ciphertext(file)
         parameters = self.get_parameters(ciphertext)
         key = self.get_key(parameters)
         plaintext = self.decrypt(ciphertext, key)
         self.save_plaintext(plaintext)
+        end = time.time()
+        print("Execution time: %.5f" % (end-start))
 
     def get_ciphertext(self, file: str)-> str:
         ciphertext = ""
@@ -31,12 +37,11 @@ class Vigenere():
 
     def get_parameters(self, ciphertext: str)-> dict:
         parameters = {}
-        for key_length in range(1, 21):
-            ioc, strings, letter_counts = self.index_coincidence(ciphertext, key_length)
+        for key_length in range(1, self.guesses):
+            ioc, letter_counts = self.index_coincidence(ciphertext, key_length)
             ioc = self.average(ioc)
             if parameters.get('ioc', 0) < ioc:
                 parameters['ioc'] = ioc
-                parameters['strings'] = strings
                 parameters['key_length'] = key_length
                 parameters['letter_counts'] = letter_counts
         return parameters
@@ -44,7 +49,7 @@ class Vigenere():
     def average(self, lst: list)-> float:
         return float(sum(lst)/len(lst))
 
-    def index_coincidence(self, ciphertext: str, key_length: int):
+    def index_coincidence(self, ciphertext: str, key_length: int)-> tuple[list, list]:
         ioc = []
         ciphertext_splitted = self.ciphertext_splitter(ciphertext, key_length)
         letter_counts = self.letters_counter(ciphertext_splitted)
@@ -52,7 +57,7 @@ class Vigenere():
         total = self.summation(letter_counts)
         for i in total:
             ioc.append(float(i) / ((n * (n - 1))))
-        return ioc, ciphertext_splitted, letter_counts
+        return ioc, letter_counts
 
     def ciphertext_splitter(self, ciphertext: str, key_length: int)-> list:
         ciphertext_lists = []
@@ -86,22 +91,26 @@ class Vigenere():
         return total
 
     def get_key(self, parameters: dict)-> str:
-        key = ''
-        v = parameters.get("letter_counts", 0)
-        for i in range(len(v)):
-            original = self.letter_frequences["EN"].index(sorted(self.letter_frequences["EN"], reverse = True)[0])
-            convertido = v[i].index(sorted(v[i], reverse = True)[0])
-            shift = 1 + convertido - original
-            shift = shift if shift > 0 else 26 + shift
-            key += chr(shift+96)
+        key = []
+        readable_key = ''
+        letter_counts = parameters.get("letter_counts", [])
+        letter_ioc = self.letter_frequences.get("EN", [])
+        for i in range(len(letter_counts)):
+            original = letter_ioc.index(sorted(letter_ioc, reverse = True)[0])
+            shifted = letter_counts[i].index(sorted(letter_counts[i], reverse = True)[0])
+            shift = 1 + shifted - original
+            shift = shift if shift > 0 else self.alphabet_size + shift
+            key.append(shift+96)
+            readable_key += chr(shift+96)
+        print("Your most probably key is: %s" % readable_key)
         return key
 
-    def decrypt(self, ciphertext: str, key: str)-> str:
-        cipher_ascii = [ord(letter) for letter in ciphertext]
-        key_ascii = [ord(letter) for letter in key]
+    def decrypt(self, ciphertext: str, key: list)-> str:
         plain_ascii = []
+        cipher_ascii = [ord(letter) for letter in ciphertext]
         for i in range(len(cipher_ascii)):
-            plain_ascii.append(((cipher_ascii[i]-key_ascii[i % len(key)]) % 26) +97)
+            decrypted = ((cipher_ascii[i]-key[i % len(key)]) % self.alphabet_size) +97
+            plain_ascii.append(decrypted)
         plaintext = ''.join(chr(i) for i in plain_ascii)
         return plaintext
 
