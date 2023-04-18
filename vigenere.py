@@ -1,7 +1,11 @@
-import time
+from time import time
+from os import listdir
+
 class Vigenere():
     def __init__(self):
         self.guesses = 21
+        self.path_plain = "./plaintexts/"
+        self.path_cipher = "./ciphertexts/"
         self.alphabet_size = 26
         self.ioc_english = 0.0656
         self.ioc_portuguese = 0.0738
@@ -15,19 +19,20 @@ class Vigenere():
                     0.0001, 0.0047]
         }
 
-    def decode(self, file: str)-> str:
-        start = time.time()
-        ciphertext = self.get_ciphertext(file)
+    def decode(self, filename: str)-> str:
+        print("File: %s" % (filename))
+        start = time()
+        ciphertext = self.get_ciphertext(filename)
         parameters = self.get_parameters(ciphertext)
         key = self.get_key(parameters)
         plaintext = self.decrypt(ciphertext, key)
-        self.save_plaintext(plaintext)
-        end = time.time()
+        self.save_plaintext(filename, plaintext)
+        end = time()
         print("Execution time: %.5f" % (end-start))
 
-    def get_ciphertext(self, file: str)-> str:
+    def get_ciphertext(self, filename: str)-> str:
         ciphertext = ""
-        with open(file, "r") as f:
+        with open("%s%s" % (self.path_cipher, filename), "r") as f:
             ciphertext = f.read()
         ciphertext = self.remove_whitespace(ciphertext)
         return ciphertext
@@ -49,7 +54,7 @@ class Vigenere():
     def average(self, lst: list)-> float:
         return float(sum(lst)/len(lst))
 
-    def index_coincidence(self, ciphertext: str, key_length: int)-> tuple[list, list]:
+    def index_coincidence(self, ciphertext: str, key_length: int):
         ioc = []
         ciphertext_splitted = self.ciphertext_splitter(ciphertext, key_length)
         letter_counts = self.letters_counter(ciphertext_splitted)
@@ -114,9 +119,12 @@ class Vigenere():
         plaintext = ''.join(chr(i) for i in plain_ascii)
         return plaintext
 
-    def save_plaintext(self, plaintext: str)-> None:
-        with open("./plaintexts/decipher.txt", "w") as f:
+    def save_plaintext(self, filename: str, plaintext: str)-> None:
+        with open("%s%s" % (self.path_plain, filename), "w") as f:
             f.write(plaintext)
 
 v = Vigenere()
-v.decode("./ciphertexts/cipher31.txt")
+files = listdir(v.path_cipher)
+for file in files:
+    v.decode(file)
+    print()
