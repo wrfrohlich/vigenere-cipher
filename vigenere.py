@@ -46,9 +46,11 @@ class Vigenere():
             ioc, letter_counts = self.index_coincidence(ciphertext, key_length)
             ioc = self.average(ioc)
             if parameters.get('ioc', 0) < ioc:
-                parameters['ioc'] = ioc
-                parameters['key_length'] = key_length
-                parameters['letter_counts'] = letter_counts
+                best_length = parameters.get('key_length', 1)
+                if key_length % best_length != 0 or best_length == 1:
+                    parameters['ioc'] = ioc
+                    parameters['key_length'] = key_length
+                    parameters['letter_counts'] = letter_counts
         return parameters
 
     def average(self, lst: list)-> float:
