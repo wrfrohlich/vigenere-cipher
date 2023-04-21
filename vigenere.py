@@ -1,11 +1,12 @@
+from sys import argv
 from time import time
-from os import listdir
+from os import listdir, mkdir
+from os.path import isdir, isfile
 
 class Vigenere():
     def __init__(self):
         self.guesses = 21
         self.path_plain = "./plaintexts/"
-        self.path_cipher = "./ciphertexts/"
         self.alphabet_size = 26
         self.ioc_english = 0.0656
         self.ioc_portuguese = 0.0738
@@ -19,22 +20,25 @@ class Vigenere():
                     0.0001, 0.0047]
         }
 
-    def decode(self, filename: str)-> str:
-        print("File: %s" % (filename))
+    def decode(self, file: str)-> str:
+        print("File: %s" % (file))
         start = time()
-        ciphertext = self.get_ciphertext(filename)
+        ciphertext = self.get_ciphertext(file)
         parameters = self.get_parameters(ciphertext)
         key = self.get_key(parameters)
         plaintext = self.decrypt(ciphertext, key)
-        self.save_plaintext(filename, plaintext)
+        self.save_plaintext(file, plaintext)
         end = time()
         print("Execution time: %.5f" % (end-start))
 
-    def get_ciphertext(self, filename: str)-> str:
+    def get_ciphertext(self, file: str)-> str:
         ciphertext = ""
-        with open("%s%s" % (self.path_cipher, filename), "r") as f:
-            ciphertext = f.read()
-        ciphertext = self.remove_whitespace(ciphertext)
+        if isfile(file):
+            with open("%s" % (file), "r") as f:
+                ciphertext = f.read()
+            ciphertext = self.remove_whitespace(ciphertext)
+        else:
+            exit("File not found")
         return ciphertext
 
     def remove_whitespace(self, text: str)-> str:
@@ -51,6 +55,8 @@ class Vigenere():
                     parameters['ioc'] = ioc
                     parameters['key_length'] = key_length
                     parameters['letter_counts'] = letter_counts
+        parameters['language'] = "PT" if parameters.get('ioc', 0) > 0.07 else "EN"
+        print("The most likely language is: %s" % parameters.get('language', "EN"))
         return parameters
 
     def average(self, lst: list)-> float:
@@ -121,12 +127,22 @@ class Vigenere():
         plaintext = ''.join(chr(i) for i in plain_ascii)
         return plaintext
 
-    def save_plaintext(self, filename: str, plaintext: str)-> None:
-        with open("%s%s" % (self.path_plain, filename), "w") as f:
+    def save_plaintext(self, file: str, plaintext: str)-> None:
+        file = file.split("/")
+        if not isdir(self.path_plain):
+            mkdir(self.path_plain)
+        with open("%s%s" % (self.path_plain, file[-1]), "w") as f:
             f.write(plaintext)
 
-v = Vigenere()
-files = listdir(v.path_cipher)
-for file in files:
-    v.decode(file)
-    print()
+if __name__ == '__main__':
+    v = Vigenere()
+    if len(argv) == 1:
+        path_cipher = "./ciphertexts/"
+        files = listdir(path_cipher)
+        for filename in files:
+            file = "%s%s" % (path_cipher, filename)
+            v.decode(file)
+            print()
+    else:
+        v.decode(argv[1])
+        print()
