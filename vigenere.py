@@ -49,18 +49,17 @@ class Vigenere():
         for key_length in range(1, self.guesses):
             ioc, letter_counts = self.index_coincidence(ciphertext, key_length)
             ioc = self.average(ioc)
-            if parameters.get('ioc', 0) < ioc:
-                best_length = parameters.get('key_length', 1)
-                if key_length % best_length != 0 or best_length == 1:
-                    parameters['ioc'] = ioc
-                    parameters['key_length'] = key_length
-                    parameters['letter_counts'] = letter_counts
+            best_ioc = parameters.get('ioc', 0)
+            if (best_ioc < ioc) and (best_ioc / ioc != 1):
+                parameters['ioc'] = ioc
+                parameters['key_length'] = key_length
+                parameters['letter_counts'] = letter_counts
         parameters['language'] = "PT" if parameters.get('ioc', 0) > 0.07 else "EN"
         print("The most likely language is: %s" % parameters.get('language', "EN"))
         return parameters
 
     def average(self, lst: list)-> float:
-        return float(sum(lst)/len(lst))
+        return round(float(sum(lst)/len(lst)), 3)
 
     def index_coincidence(self, ciphertext: str, key_length: int):
         ioc = []
@@ -115,7 +114,7 @@ class Vigenere():
             shift = shift if shift > 0 else self.alphabet_size + shift
             key.append(shift+96)
             readable_key += chr(shift+96)
-        print("Your most probably key is: %s" % readable_key)
+        print("Your most likely key is: %s" % readable_key)
         return key
 
     def decrypt(self, ciphertext: str, key: list)-> str:
