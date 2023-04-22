@@ -10,7 +10,7 @@ class Vigenere():
         self.alphabet_size = 26
         self.ioc_english = 0.0656
         self.ioc_portuguese = 0.0738
-        self.letter_frequences = [  0.065, 0.012, 0.022, 0.032, 0.103, 0.019, 0.015,
+        self.letter_frequency = [  0.065, 0.012, 0.022, 0.032, 0.103, 0.019, 0.015,
                                     0.049, 0.055, 0.001, 0.005, 0.033, 0.020, 0.057,
                                     0.063, 0.017, 0.001, 0.051, 0.067, 0.090, 0.027,
                                     0.010, 0.024, 0.002, 0.020, 0.001]
@@ -101,7 +101,7 @@ class Vigenere():
         key = []
         readable_key = ''
         letter_counts = parameters.get("letter_counts", [])
-        letter_ioc = self.letter_frequences
+        letter_ioc = self.letter_frequency
         for i in range(len(letter_counts)):
             original = letter_ioc.index(sorted(letter_ioc, reverse = True)[0])
             shifted = letter_counts[i].index(sorted(letter_counts[i], reverse = True)[0])
