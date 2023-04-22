@@ -10,15 +10,10 @@ class Vigenere():
         self.alphabet_size = 26
         self.ioc_english = 0.0656
         self.ioc_portuguese = 0.0738
-        self.letter_frequences = {
-            'EN' : [0.065, 0.012, 0.022, 0.032, 0.103, 0.019, 0.015, 0.049, 0.055,
-                    0.001, 0.005, 0.033, 0.020, 0.057, 0.063, 0.017, 0.001, 0.051,
-                    0.067, 0.090, 0.027, 0.010, 0.024, 0.002, 0.020, 0.001],
-            "PT" : [0.0687, 0.0150, 0.0279, 0.0463, 0.0964, 0.0157, 0.0104, 0.0129,
-                    0.0654, 0.0047, 0.0002, 0.0343, 0.0252, 0.0463, 0.0974, 0.0228,
-                    0.0114, 0.0664, 0.0780, 0.0433, 0.0360, 0.0153, 0.0007, 0.0021,
-                    0.0001, 0.0047]
-        }
+        self.letter_frequences = [  0.065, 0.012, 0.022, 0.032, 0.103, 0.019, 0.015,
+                                    0.049, 0.055, 0.001, 0.005, 0.033, 0.020, 0.057,
+                                    0.063, 0.017, 0.001, 0.051, 0.067, 0.090, 0.027,
+                                    0.010, 0.024, 0.002, 0.020, 0.001]
 
     def decode(self, file: str)-> str:
         print("File: %s" % (file))
@@ -106,7 +101,7 @@ class Vigenere():
         key = []
         readable_key = ''
         letter_counts = parameters.get("letter_counts", [])
-        letter_ioc = self.letter_frequences.get("EN", [])
+        letter_ioc = self.letter_frequences
         for i in range(len(letter_counts)):
             original = letter_ioc.index(sorted(letter_ioc, reverse = True)[0])
             shifted = letter_counts[i].index(sorted(letter_counts[i], reverse = True)[0])
